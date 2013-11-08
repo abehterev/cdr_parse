@@ -41,7 +41,6 @@ sub num2e164
         {
         }
         return $num;
-# blah-blah
 #      }else{
 #	return "err";
 #      }
