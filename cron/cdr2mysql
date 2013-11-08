@@ -1,0 +1,5 @@
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+HOME=/
+*/30 * * * * root /BILLING/ATS/cdr/cdr2mysql.pl 2>&1 >> /var/log/cdr2mysql.log
