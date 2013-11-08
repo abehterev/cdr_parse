@@ -9,21 +9,21 @@ use DBI;
 my $time1 = gettimeofday;
 
 # GLOBAL VARIABLES
-my $mid=1; # mid in billing
 my $dir = "/BILLING/ATS/cdr/"; # main directory
 my $tm = localtime;
+my $sql_login = "bill";
+my $sql_pass = "billpass";
 
 print("###------------------------------------------###\n");
 print("TIME: ".$tm->mday.".".($tm->mon+1).".".($tm->year+1900)." ".$tm->hour.":".$tm->min."\n");
-#my $cdr = sprintf("%scdr_log_mon%02d_%04d.log",$dir,($tm->mon+1),($tm->year+1900));
-my %DATA = (); # data hash
+
+my %DATA = (); # init data hash
 
 # convert to format Е.164
 sub num2e164
 {
    my $num = shift;
    chomp($num);
-#      if($num ne '-'){
         # если 10 цифр - приписываем 7 ку
         if( $num =~ s/^(\d{10})$/7$1/ )
         {
@@ -41,19 +41,17 @@ sub num2e164
         {
         }
         return $num;
-#      }else{
-#	return "err";
-#      }
 }
 
-# READ CDR FILES ARGV1=$CDR_FILE_NAME
+# READ CDR FILES
+#	ARGV1=$CDR_FILE_NAME
 sub read_cdr_file
 {
 	my $cdr = shift;
 
 	my $dsn = 'DBI:mysql:bill:localhost';
-	my $db_user_name = 'bill';
-	my $db_password = 'billpass';
+	my $db_user_name = $sql_login;
+	my $db_password = $sql_pass;
 	my $dbh = DBI->connect($dsn, $db_user_name, $db_password,{ RaiseError => 1 });
 	my $insert_handle = $dbh->prepare_cached("INSERT IGNORE INTO cdr VALUES (?,?,?,?,?,?)");
 
@@ -89,9 +87,7 @@ sub read_cdr_file
                                            }
 					}
 
-					#my $str = sprintf("%02d.%02d.%04d %02d:%02d:%02d\t%s\t%s\t%s\t%s\t%s\t%s\t%s",$d,$m,$y,$h,$mm,$ss,$long,$r_from,$r_to,$from_p,$to_p,$cat,$long2);
 					my $timestr = sprintf("%02d-%02d-%04d %02d:%02d:%02d",$y,$m,$d,$hh,$mm,$ss);
-					#print("long: $long\n");
 					$insert_handle->execute($timestr,$r_from,$r_to,$from_p,$to_p,$long) || die "Can not write mysql";
 
 			}else{
@@ -99,7 +95,6 @@ sub read_cdr_file
 			}
 	}
 	close(CDR);
-
 	$dbh->disconnect();
 }
 
